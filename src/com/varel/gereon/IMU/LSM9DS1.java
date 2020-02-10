@@ -199,22 +199,78 @@ public class LSM9DS1 {
     }
 
     /**
-     * Reads and stores all data from the IMU.
+     * Reads and stores all data from the IMU. Also calculates Euler angles.
      */
     public void read() {
         this.readAccelerometerOrGyroscope(true);
         this.readAccelerometerOrGyroscope(false);
         this.readMagnetometer();
         // this.readTemperature();
+        this.calculateEulerAngles();
     }
 
     /**
-     * Calculates Euler angles and returns them.
-     *
-     * @return Returns a formatted string displaying Roll, Pitch and Yaw.
+     * @return Returns the last saved data from the accelerometer.
      */
-    public String getEulerAngles() {
-        DecimalFormat formatter = new DecimalFormat("00.00");
+    public float[] getAccelerometerData() {
+        float[] accelerometerData = new float[3];
+        accelerometerData[0] = this.accelerometerData.getX();
+        accelerometerData[1] = this.accelerometerData.getY();
+        accelerometerData[2] = this.accelerometerData.getZ();
+        return accelerometerData;
+    }
+
+    /**
+     * @return Returns the last saved data from the gyroscope.
+     */
+    public float[] getGyroscopeData() {
+        float[] gyroscopeData = new float[3];
+        gyroscopeData[0] = this.gyroscopeData.getX();
+        gyroscopeData[1] = this.gyroscopeData.getY();
+        gyroscopeData[2] = this.gyroscopeData.getZ();
+        return gyroscopeData;
+    }
+
+    /**
+     * @return Returns the last saved data from the magnetometer.
+     */
+    public float[] getMagnetometerData() {
+        float[] magnetometerData = new float[3];
+        magnetometerData[0] = this.magnetometerData.getX();
+        magnetometerData[1] = this.magnetometerData.getY();
+        magnetometerData[2] = this.magnetometerData.getZ();
+        return magnetometerData;
+    }
+
+    /**
+     * @return Returns the last saved raw data from the temperature sensor.
+     */
+    public int getTemperature() {
+        return this.temperature;
+    }
+
+    /**
+     * @return Returns the last calculated pitch.
+     */
+    public double getPitch() {
+        return this.pitch;
+    }
+
+    /**
+     * @return Returns the last calculated roll.
+     */
+    public double getRoll() {
+        return this.roll;
+    }
+
+    /**
+     * @return Returns the last calculated yaw.
+     */
+    public double getYaw() {
+        return this.yaw;
+    }
+
+    private void calculateEulerAngles() {
         // Measured angle by the accelerometer
         double rollXLMeasured = Math.atan2(this.accelerometerData.getX() / EARTH_GRAVITY, this.accelerometerData.getZ() / EARTH_GRAVITY) / 2 / Math.PI * 360;
         double pitchXLMeasured = Math.atan2(this.accelerometerData.getY() / EARTH_GRAVITY, this.accelerometerData.getZ() / EARTH_GRAVITY) / 2 / Math.PI * 360;
@@ -233,38 +289,6 @@ public class LSM9DS1 {
         // Adding a complementary filter
         this.roll = 0.95f * (this.roll + this.gyroscopeData.getY() * difference) + 0.05f * rollXLMeasured;
         this.pitch = 0.95f * (this.pitch - this.gyroscopeData.getX() * difference) + 0.05f * pitchXLMeasured;
-
-        return "Roll: \t" + formatter.format(roll) +
-               ",\tPitch: \t" + formatter.format(pitch) +
-               ",\tYaw: \t" + formatter.format(yaw) + "\n";
-    }
-
-    /**
-     * @return Retuns the last saved data from the accelerometer.
-     */
-    public AccelerometerData getAccelerometerData() {
-        return this.accelerometerData;
-    }
-
-    /**
-     * @return Retuns the last saved data from the gyroscope.
-     */
-    public GyroscopeData getGyroscopeData() {
-        return this.gyroscopeData;
-    }
-
-    /**
-     * @return Retuns the last saved data from the magnetometer.
-     */
-    public MagnetometerData getMagnetometerData() {
-        return this.magnetometerData;
-    }
-
-    /**
-     * @return Retuns the last saved raw data from the temperature sensor.
-     */
-    public int getTemperature() {
-        return this.temperature;
     }
 
     /**
@@ -274,29 +298,6 @@ public class LSM9DS1 {
      */
     public void close() throws IOException {
         this.bus.close();
-    }
-
-    /**
-     * Obtains all the data from the IMU and returns a formatted string.
-     *
-     * @return Returns a formatted string displaying all of the available data from the IMU.
-     */
-    @Override
-    public String toString() {
-        String temp = "";
-        DecimalFormat formatter = new DecimalFormat("00.00");
-        if (this.accelerometerData != null) {
-            temp += "Accelerometer: \tX->" + formatter.format(this.accelerometerData.getX()) + " \tY->" + formatter.format(this.accelerometerData.getY()) + " \tZ->" + formatter.format(this.accelerometerData.getZ()) + " \t(m/s^2)\n";
-        }
-        if (this.gyroscopeData != null) {
-            temp += "Gyroscope: \tX->" + formatter.format(this.gyroscopeData.getX()) + " \tY->" + formatter.format(this.gyroscopeData.getY()) + " \tZ->" + formatter.format(this.gyroscopeData.getZ()) + " \t(rad/s)\n";
-        }
-        if (this.magnetometerData != null) {
-            // TODO
-        }
-        // temp += "Temperature: \t" + ((float)(this.temperature / 8) + 21.0f) + " (°C)\n";
-
-        return temp;
     }
 
     private static class AccelerometerData {
