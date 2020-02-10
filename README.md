@@ -23,9 +23,9 @@ To use this driver, you just have to create a new instance of the LSM9DS1 class.
     imu.read();
 
     // Get acceleration data
-    float accelerometerX = imu.getAccelerationData()[0];
-    float accelerometerY = imu.getAccelerationData()[1];
-    float accelerometerZ = imu.getAccelerationData()[2];
+    float accelerometerX = imu.getAccelerometerData()[0];
+    float accelerometerY = imu.getAccelerometerData()[1];
+    float accelerometerZ = imu.getAccelerometerData()[2];
 
     // Get gyroscope data
     float gyroscopeX = imu.getGyroscopeData()[0];
